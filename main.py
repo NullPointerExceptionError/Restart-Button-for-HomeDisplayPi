@@ -5,7 +5,7 @@ import signal
 import time
 
 # PIN for Button
-BUTTON_PIN = 17
+BUTTON_PIN = 14
 
 # path to script to restart
 SCRIPT_PATH = '../HomeDisplayPi/src/main.py'
@@ -39,20 +39,24 @@ def restart_script():
     except subprocess.CalledProcessError as e:
         print(f"error restarting the script: {e}")
 
+def button_callback(channel):
+    """if button pressed do this"""
+    find_and_kill_process_by_script_name("python src/main.py") # kill running process (if multiple running, it kills only one of them)
+    restart_script()
+
 def setup_gpio():
     """Init GPIO for Button."""
     GPIO.setmode(GPIO.BCM)  # use BCM-Mode for PIN-numbers
     GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Set Button-Pin as input with Pull-Up-resistor
+    
+    GPIO.add_event_detect(BUTTON_PIN, GPIO.FALLING, callback=button_callback, bouncetime=200) # connect callback function with button press 
 
-def wait_for_button_press():
+def main():
     """wait for button press and restart script"""
     try:
-        while True:
-            input_state = GPIO.input(BUTTON_PIN)
-            if input_state == GPIO.LOW:  # if button pressed
-                if find_and_kill_process_by_script_name("python src/main.py"):
-                    restart_script()  # restart script after killing running process
-                time.sleep(1)  # avoid multiple restarting script
+        setup_gpio()
+        while True: # wait for button press
+            time.sleep(1)
     except KeyboardInterrupt:
         print("exit")
     finally:
@@ -60,15 +64,7 @@ def wait_for_button_press():
 
 # main logic
 if __name__ == "__main__":
-    #setup_gpio()  # init GPIO
-    #wait_for_button_press()  # restart script if button pressed
-
-    #just for testing without button
-    if find_and_kill_process_by_script_name("python src/main.py", "S"):
-        restart_script()
-    else:
-        restart_script()
-    time.sleep(20)
+    main()
 
 
 
