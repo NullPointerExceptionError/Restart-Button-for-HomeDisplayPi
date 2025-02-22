@@ -22,7 +22,7 @@ def find_and_kill_process_by_script_name(script_name, status="S"):
         output = subprocess.check_output(['ps', '-eo', 'pid,state,cmd'], text=True)
         for line in output.splitlines():
             # filter processes which have scriptname and status
-            if script_name in line or "../HomeDisplayPi/venv/bin/python ../HomeDisplayPi/src/main.py" in line and status in line and "python" in line: # the second condition occurs on restart by this program  
+            if script_name in line or "../HomeDisplayPi/venv/bin/python ../HomeDisplayPi/src/main.py" in line and "python" in line: # the second condition occurs on restart by this program  
                 parts = line.split(maxsplit=2)
                 pid = int(parts[0])  # extract PID
                 os.kill(pid, signal.SIGINT)  # kill process softly with Ctrl+C signal
